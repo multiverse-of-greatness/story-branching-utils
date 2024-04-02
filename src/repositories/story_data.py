@@ -77,3 +77,17 @@ class StoryDataRepository(object):
                 story_id=story_data.id, chunk_id=story_data.start_chunk_id
             )
         logger.info(f"StoryData {story_data.id} linked to chunk {story_data.start_chunk_id}")
+
+    def delete(self, story_id: str):
+        with self.database.driver.session() as session:
+            session.run(
+                ("MATCH (storyData:StoryData {id: $story_id}) "
+                 "DETACH DELETE storyData"),
+                story_id=story_id
+            )
+            session.run(
+                ("MATCH (storyChunk:StoryChunk {story_id: $story_id}) "
+                 "DETACH DELETE storyChunk"),
+                story_id=story_id
+            )
+        logger.info(f"StoryData {story_id} deleted")
