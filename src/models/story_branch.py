@@ -27,7 +27,7 @@ class StoryBranch:
         )
 
     def __str__(self):
-        return f'StoryChoice(source_chunk_id={self.source_chunk_id}, target_chunk_id={self.target_chunk_id}, choice={self.choice})'
+        return f'StoryBranch(source_chunk_id={self.source_chunk_id}, target_chunk_id={self.target_chunk_id}, choice={self.choice})'
     
     def __repr__(self):
         return str(self)
