@@ -1,0 +1,4 @@
+loguru~=0.7.2
+neo4j~=5.18.0
+python-dotenv~=1.0.1
+typer~=0.9.0
