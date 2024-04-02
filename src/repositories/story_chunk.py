@@ -1,5 +1,4 @@
-import json
-
+import ujson
 from loguru import logger
 
 from src.databases import Neo4J
@@ -33,12 +32,12 @@ class StoryChunkRepository:
     def create(self, story_chunk: StoryChunk):
         with self.database.driver.session() as session:
             session.run(
-                ("CREATE (storyChunk:StoryChunk {id: $id, chapter: $chapter, story_so_far: $story_so_far, "
+                ("MERGE (storyChunk:StoryChunk {id: $id, chapter: $chapter, story_so_far: $story_so_far, "
                  "story: $story, history: $history, story_id: $story_id, num_opportunities: $num_opportunities})"),
                 id=story_chunk.id,
                 chapter=story_chunk.chapter,
                 story_so_far=story_chunk.story_so_far,
-                story=json.dumps([n.to_dict() for n in story_chunk.story]),
+                story=ujson.dumps([n.to_dict() for n in story_chunk.story]),
                 history=story_chunk.history,
                 story_id=story_chunk.story_id,
                 num_opportunities=story_chunk.num_opportunities,

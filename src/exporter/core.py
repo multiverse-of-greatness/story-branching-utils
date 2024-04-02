@@ -31,7 +31,7 @@ def run_export_story(story_id: str):
             story_chunk = StoryChunkRepository().get(chunk_id)
             story_chunk.to_json_file()
 
-            branches = StoryBranchRepository().list_branches(chunk_id)
+            branches = StoryBranchRepository().list_branches_from(chunk_id)
             export_story_branches(story_chunk, branches)
             
             frontiers.extend([b.target_chunk_id for b in branches])

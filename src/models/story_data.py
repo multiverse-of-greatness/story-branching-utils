@@ -1,7 +1,7 @@
-import json
 from dataclasses import dataclass
 from pathlib import Path
 
+import ujson
 from loguru import logger
 
 from src.config import DATA_PATH
@@ -53,19 +53,19 @@ class StoryData:
         self.output_dir.mkdir(parents=True, exist_ok=True)
         file_path = self.output_dir / "data.json"
         with open(file_path, 'w') as file:
-            json.dump(self.to_dict(), file, indent=2)
+            ujson.dump(self.to_dict(), file, indent=2)
         logger.info(f"Exported story data to {file_path}")
     
     @classmethod
     def from_dict(cls, data_obj: dict):
         if isinstance(data_obj.get("main_scenes"), str):
-            data_obj["main_scenes"] = json.loads(data_obj.get("main_scenes"))
+            data_obj["main_scenes"] = ujson.loads(data_obj.get("main_scenes"))
         if isinstance(data_obj.get("main_characters"), str):
-            data_obj["main_characters"] = json.loads(data_obj.get("main_characters"))
+            data_obj["main_characters"] = ujson.loads(data_obj.get("main_characters"))
         if isinstance(data_obj.get("chapter_synopses"), str):
-            data_obj["chapter_synopses"] = json.loads(data_obj.get("chapter_synopses"))
+            data_obj["chapter_synopses"] = ujson.loads(data_obj.get("chapter_synopses"))
         if isinstance(data_obj.get("endings"), str):
-            data_obj["endings"] = json.loads(data_obj.get("endings"))
+            data_obj["endings"] = ujson.loads(data_obj.get("endings"))
             
         return cls(
             id=data_obj.get("id"),
@@ -86,7 +86,7 @@ class StoryData:
     @classmethod
     def from_json_file(cls, file_path: Path):
         with open(file_path, 'r') as file:
-            return cls.from_dict(json.load(file))
+            return cls.from_dict(ujson.load(file))
     
     def get_text(self) -> str:
         ending_text = "\n".join([f"{i+1}. {e.ending}" for i, e in enumerate(self.endings)])

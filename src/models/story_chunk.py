@@ -1,7 +1,7 @@
-import json
 from dataclasses import dataclass
 from pathlib import Path
 
+import ujson
 from loguru import logger
 
 from src.config import DATA_PATH
@@ -37,13 +37,13 @@ class StoryChunk:
         self.output_dir.mkdir(parents=True, exist_ok=True)
         file_path = self.output_dir / "data.json"
         with open(file_path, 'w') as file:
-            json.dump(self.to_dict(), file, indent=2)
+            ujson.dump(self.to_dict(), file, indent=2)
         logger.info(f"Exported story chunk to {file_path}")
 
     @classmethod
     def from_dict(cls, data_obj: dict):
         if isinstance(data_obj.get("story"), str):
-            data_obj["story"] = json.loads(data_obj.get("story"))
+            data_obj["story"] = ujson.loads(data_obj.get("story"))
         return cls(
             id=data_obj.get("id"),
             story_id=data_obj.get("story_id"),
@@ -57,7 +57,7 @@ class StoryChunk:
     @classmethod
     def from_json_file(cls, file_path: Path):
         with open(file_path, 'r') as file:
-            return cls.from_dict(json.load(file))
+            return cls.from_dict(ujson.load(file))
     
     def get_narratives(self) -> str:
         return '\n'.join([f"{narrative.speaker}: {narrative.text}" for narrative in self.story])

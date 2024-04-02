@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Optional
 
+import ujson
+
 from src.models.story.story_choice import StoryChoice
 
 
@@ -19,11 +21,13 @@ class StoryBranch:
 
     @classmethod
     def from_dict(cls, data_obj: dict):
-        choice_obj = data_obj.get("choice")
+        if isinstance(data_obj.get("choice"), str):
+            data_obj["choice"] = ujson.loads(data_obj.get("choice"))
+
         return cls(
-            source_chunk_id=data_obj["source_chunk_id"],
-            target_chunk_id=data_obj["target_chunk_id"],
-            choice=None if not choice_obj else StoryChoice.from_dict(choice_obj)
+            source_chunk_id=data_obj.get("source_chunk_id"),
+            target_chunk_id=data_obj.get("target_chunk_id"),
+            choice=None if not data_obj.get("choice") else StoryChoice.from_dict(data_obj.get("choice"))
         )
 
     def __str__(self):

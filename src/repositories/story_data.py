@@ -1,5 +1,4 @@
-import json
-
+import ujson
 from loguru import logger
 
 from src.databases import Neo4J
@@ -57,15 +56,15 @@ class StoryDataRepository(object):
     def create(self, story_data: StoryData):
         with self.database.driver.session() as session:
             session.run(
-                """CREATE (storyData:StoryData {id: $id, title: $title, genre: $genre, themes: $themes, 
-                main_scenes: $main_scenes, main_characters: $main_characters, 
-                synopsis: $synopsis, chapter_synopses: $chapter_synopses, 
-                beginning: $beginning, endings: $endings, generated_by: $generated_by, approach: $approach})""",
+                ("MERGE (storyData:StoryData {id: $id, title: $title, genre: $genre, themes: $themes, "
+                 "main_scenes: $main_scenes, main_characters: $main_characters, "
+                 "synopsis: $synopsis, chapter_synopses: $chapter_synopses, "
+                 "beginning: $beginning, endings: $endings, generated_by: $generated_by, approach: $approach})"),
                 id=story_data.id, title=story_data.title, genre=story_data.genre, themes=story_data.themes,
-                main_scenes=json.dumps([s.to_dict() for s in story_data.main_scenes]),
-                main_characters=json.dumps([c.to_dict() for c in story_data.main_characters]), synopsis=story_data.synopsis,
-                chapter_synopses=json.dumps([c.to_dict() for c in story_data.chapter_synopses]), beginning=story_data.beginning,
-                endings=json.dumps([e.to_dict() for e in story_data.endings]), generated_by=story_data.generated_by,
+                main_scenes=ujson.dumps([s.to_dict() for s in story_data.main_scenes]),
+                main_characters=ujson.dumps([c.to_dict() for c in story_data.main_characters]), synopsis=story_data.synopsis,
+                chapter_synopses=ujson.dumps([c.to_dict() for c in story_data.chapter_synopses]), beginning=story_data.beginning,
+                endings=ujson.dumps([e.to_dict() for e in story_data.endings]), generated_by=story_data.generated_by,
                 approach=story_data.approach.value
             )
         logger.info(f"StoryData {story_data.id} created")
@@ -74,7 +73,7 @@ class StoryDataRepository(object):
         with self.database.driver.session() as session:
             session.run(
                 ("MATCH (storyData:StoryData {id: $story_id}), (storyChunk:StoryChunk {id: $chunk_id}) "
-                 "CREATE (storyData)-[:STARTED_AT]->(storyChunk)"),
+                 "MERGE (storyData)-[:STARTED_AT]->(storyChunk)"),
                 story_id=story_data.id, chunk_id=story_data.start_chunk_id
             )
         logger.info(f"StoryData {story_data.id} linked to chunk {story_data.start_chunk_id}")
