@@ -16,7 +16,8 @@ def run_export_all():
 def run_export_story(story_id: str):
     story_data_path = DATA_PATH / story_id
     if story_data_path.exists():
-        raise FileExistsError(f"Story {story_id} already exists")
+        logger.warning(f"Story {story_id} already exists")
+        return
 
     logger.info(f"Exporting story {story_id}")
     story_data = StoryDataRepository().get(story_id)
