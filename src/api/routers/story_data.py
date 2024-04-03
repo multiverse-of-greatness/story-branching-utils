@@ -41,3 +41,12 @@ async def link_chunk_for(story_id: str, chunk_id: str, repository: Annotated[Sto
         return JSONResponse(content={"message": f"Story data {story_id} linked to chunk {chunk_id}"})
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
+    
+
+@router.delete("/{story_id}")
+async def delete(story_id: str, repository: Annotated[StoryDataRepository, Depends(get_story_data_repository)]):
+    try:
+        repository.delete(story_id)
+        return JSONResponse(content={"message": f"Story data {story_id} deleted successfully"})
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=500)
