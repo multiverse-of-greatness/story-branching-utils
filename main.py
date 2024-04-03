@@ -1,3 +1,5 @@
+from typing import Annotated
+
 import typer
 import uvicorn
 from dotenv import load_dotenv
@@ -10,8 +12,8 @@ app = typer.Typer()
 
 
 @app.command()
-def start_api_server():
-    uvicorn.run(api, port=8000)
+def start_api_server(port: Annotated[int, "Port to run the API server on"] = 8000):
+    uvicorn.run(api, port=port)
 
 
 @app.command()
