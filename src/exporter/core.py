@@ -1,3 +1,4 @@
+import ujson
 from loguru import logger
 
 from src.config import DATA_PATH
@@ -20,16 +21,27 @@ def run_export_story(story_id: str):
         return
 
     logger.info(f"Exporting story {story_id}")
-    story_data = StoryDataRepository().get(story_id)
-    story_data.to_json_file()
+    story_data, start_chunk_id = StoryDataRepository().get_with_start_chunk_id(story_id)
+    story_data.output_dir.mkdir(parents=True, exist_ok=True)
+    story_file_path = story_data.output_dir / "data.json"
+    with open(story_file_path, 'w') as file:
+        story_obj = story_data.to_dict(include_image=True)
+        story_obj["start_chunk_id"] = start_chunk_id
+        ujson.dump(story_obj, file, indent=2)
+    logger.info(f"Exported story data to {story_file_path}")
 
-    if story_data.start_chunk_id:
-        frontiers: list[str] = [story_data.start_chunk_id]
+    if start_chunk_id:
+        frontiers: list[str] = [start_chunk_id]
         while frontiers:
             chunk_id = frontiers.pop(0)
 
             story_chunk = StoryChunkRepository().get(chunk_id)
-            story_chunk.to_json_file()
+            story_chunk.output_dir.mkdir(parents=True, exist_ok=True)
+            chunk_file_path = story_chunk.output_dir / "data.json"
+            with open(chunk_file_path, 'w') as file:
+                chunk_obj = story_chunk.to_dict(include_history=True)
+                ujson.dump(chunk_obj, file, indent=2)
+            logger.info(f"Exported story chunk to {chunk_file_path}")
 
             branches = StoryBranchRepository().list_branches_from(chunk_id)
             export_story_branches(story_chunk, branches)

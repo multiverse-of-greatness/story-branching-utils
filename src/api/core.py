@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 
-import src.routers.story_chunk as story_chunk_router
-import src.routers.story_data as story_data_router
-import src.routers.story_branch as story_branch_router
+import src.api.routers.story_branch as story_branch_router
+import src.api.routers.story_chunk as story_chunk_router
+import src.api.routers.story_data as story_data_router
 
 api = FastAPI()
 

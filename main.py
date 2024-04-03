@@ -2,7 +2,7 @@ import typer
 import uvicorn
 from dotenv import load_dotenv
 
-from src.api import api
+from src.api.core import api
 from src.exporter.core import run_export_all, run_export_story
 from src.importer.core import run_import_story
 

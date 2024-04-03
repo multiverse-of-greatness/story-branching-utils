@@ -1,9 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
 
 import ujson
-from loguru import logger
 
 from src.config import DATA_PATH
 from src.models.enums.generation_approach import GenerationApproach
@@ -27,7 +25,6 @@ class StoryData:
     endings: list[EndingData]
     generated_by: str
     approach: GenerationApproach
-    start_chunk_id: Optional[str] = None
 
     @property
     def output_dir(self) -> Path:
@@ -47,15 +44,7 @@ class StoryData:
             'endings': [ending.to_dict() for ending in self.endings],
             'generated_by': self.generated_by,
             'approach': self.approach.value,
-            'start_chunk_id': self.start_chunk_id
         }
-    
-    def to_json_file(self):
-        self.output_dir.mkdir(parents=True, exist_ok=True)
-        file_path = self.output_dir / "data.json"
-        with open(file_path, 'w') as file:
-            ujson.dump(self.to_dict(include_image=True), file, indent=2)
-        logger.info(f"Exported story data to {file_path}")
     
     @classmethod
     def from_dict(cls, data_obj: dict):
@@ -81,13 +70,7 @@ class StoryData:
             endings=[EndingData.from_dict(e) for e in data_obj.get("endings", [])],
             generated_by=data_obj.get("generated_by"),
             approach=GenerationApproach(data_obj.get("approach")),
-            start_chunk_id=data_obj.get("start_chunk_id")
         )
-    
-    @classmethod
-    def from_json_file(cls, file_path: Path):
-        with open(file_path, 'r') as file:
-            return cls.from_dict(ujson.load(file))
     
     def get_text(self) -> str:
         ending_text = "\n".join([f"{i+1}. {e.ending}" for i, e in enumerate(self.endings)])
