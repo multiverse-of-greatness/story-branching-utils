@@ -19,8 +19,10 @@ async def list(repository: Annotated[StoryDataRepository, Depends(get_story_data
 @router.get("/{story_id}")
 async def get(story_id: str, repository: Annotated[StoryDataRepository, Depends(get_story_data_repository)], with_image: bool = False):
     try:
-        story_data = repository.get(story_id)
-        return JSONResponse(content=story_data.to_dict(with_image))
+        story_data, start_chunk_id = repository.get_with_start_chunk_id(story_id)
+        story_obj = story_data.to_dict(with_image)
+        story_obj["start_chunk_id"] = start_chunk_id
+        return JSONResponse(content=story_obj)
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
