@@ -17,7 +17,7 @@ class CharacterData:
     image: Optional[str] = None
     original_image: Optional[str] = None
 
-    def to_dict(self) -> dict:
+    def to_dict(self, include_image: bool = False) -> dict:
         return {
             'id': self.id,
             'first_name': self.first_name,
@@ -29,8 +29,8 @@ class CharacterData:
             'background': self.background,
             'place_of_birth': self.place_of_birth,
             'physical_appearance': self.physical_appearance,
-            'image': self.image,
-            'original_image': self.original_image
+            'image': self.image if include_image else None,
+            'original_image': self.original_image if include_image else None
         }
 
     @classmethod

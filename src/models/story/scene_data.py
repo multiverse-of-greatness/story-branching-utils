@@ -10,13 +10,13 @@ class SceneData:
     description: str
     image: Optional[str] = None
 
-    def to_dict(self) -> dict:
+    def to_dict(self, include_image: bool = False) -> dict:
         return {
             'id': self.id,
             'title': self.title,
             'location': self.location,
             'description': self.description,
-            'image': self.image
+            'image': self.image if include_image else None
         }
 
     @classmethod

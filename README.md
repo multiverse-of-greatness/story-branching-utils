@@ -14,3 +14,8 @@ Export all stories from database:
 ```
 python main.py export-all
 ```
+
+Start the API server:
+```
+python main.py start-api-server
+```

@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Optional
 
 import ujson
 from loguru import logger
@@ -26,20 +27,20 @@ class StoryData:
     endings: list[EndingData]
     generated_by: str
     approach: GenerationApproach
-    start_chunk_id: str = None
+    start_chunk_id: Optional[str] = None
 
     @property
     def output_dir(self) -> Path:
         return DATA_PATH / self.id
 
-    def to_dict(self) -> dict:
+    def to_dict(self, include_image: bool = False) -> dict:
         return {
             'id': self.id,
             'title': self.title,
             'genre': self.genre,
             'themes': self.themes,
-            'main_scenes': [scene.to_dict() for scene in self.main_scenes],
-            'main_characters': [character.to_dict() for character in self.main_characters],
+            'main_scenes': [scene.to_dict(include_image) for scene in self.main_scenes],
+            'main_characters': [character.to_dict(include_image) for character in self.main_characters],
             'synopsis': self.synopsis,
             'chapter_synopses': [chapter_synopsis.to_dict() for chapter_synopsis in self.chapter_synopses],
             'beginning': self.beginning,
@@ -53,7 +54,7 @@ class StoryData:
         self.output_dir.mkdir(parents=True, exist_ok=True)
         file_path = self.output_dir / "data.json"
         with open(file_path, 'w') as file:
-            ujson.dump(self.to_dict(), file, indent=2)
+            ujson.dump(self.to_dict(include_image=True), file, indent=2)
         logger.info(f"Exported story data to {file_path}")
     
     @classmethod

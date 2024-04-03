@@ -22,7 +22,7 @@ class StoryChunk:
     def output_dir(self) -> Path:
         return DATA_PATH / self.story_id / "chunks" / self.id
 
-    def to_dict(self) -> dict:
+    def to_dict(self, include_history: bool = False) -> dict:
         return {
             "id": self.id,
             "story_id": self.story_id,
@@ -30,20 +30,23 @@ class StoryChunk:
             "story_so_far": self.story_so_far,
             "story": [narrative.to_dict() for narrative in self.story],
             "num_opportunities": self.num_opportunities,
-            "history": self.history,
+            "history": None if not include_history else ujson.loads(self.history),
         }
 
     def to_json_file(self):
         self.output_dir.mkdir(parents=True, exist_ok=True)
         file_path = self.output_dir / "data.json"
         with open(file_path, 'w') as file:
-            ujson.dump(self.to_dict(), file, indent=2)
+            ujson.dump(self.to_dict(include_history=True), file, indent=2)
         logger.info(f"Exported story chunk to {file_path}")
 
     @classmethod
     def from_dict(cls, data_obj: dict):
         if isinstance(data_obj.get("story"), str):
             data_obj["story"] = ujson.loads(data_obj.get("story"))
+        if isinstance(data_obj.get("history"), list):
+            data_obj["history"] = ujson.dumps(data_obj.get("history"))
+        
         return cls(
             id=data_obj.get("id"),
             story_id=data_obj.get("story_id"),

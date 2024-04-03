@@ -1,5 +1,4 @@
-import json
-
+import ujson
 from loguru import logger
 
 from src.config import DATA_PATH
@@ -36,7 +35,7 @@ def run_import_story(story_id: str):
                 del branches[chunk_id]
 
             with open(chunk_path / "branches.json", 'r') as file:
-                new_branches = [StoryBranch.from_dict(b) for b in json.load(file)]
+                new_branches = [StoryBranch.from_dict(b) for b in ujson.load(file)]
 
             for branch in new_branches:
                 branches[branch.target_chunk_id] = branch
