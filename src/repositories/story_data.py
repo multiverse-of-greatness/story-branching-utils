@@ -23,7 +23,7 @@ class StoryDataRepository(object):
         with self.database.driver.session() as session:
             results = session.run(
                 ("MATCH (storyData:StoryData) "
-                 "RETURN storyData, storyChunk")
+                 "RETURN storyData")
             )
             for record in results:
                 story_obj = dict(record["storyData"])
