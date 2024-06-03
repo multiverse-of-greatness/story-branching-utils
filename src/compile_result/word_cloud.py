@@ -2,10 +2,11 @@ import os
 from pathlib import Path
 
 import ujson
+from loguru import logger
+from nltk.tokenize.toktok import ToktokTokenizer
 from tqdm import tqdm
 from wordcloud import WordCloud
 
-from src.compile_result.utils import clean
 from src.config import OUTPUTS_PATH, RESULT_PATH
 from src.models.enums.generation_approach import GenerationApproach
 
@@ -15,23 +16,25 @@ def core_word_cloud_aggregation():
 
     narrative_texts = ["", ""]
     path_to_stories = RESULT_PATH / "exported-data"
-    for path_to_story in path_to_stories.iterdir():
+    for story_id in tqdm(os.listdir(path_to_stories)):
+        path_to_story = path_to_stories / story_id
         with open(path_to_story / "data.json", "r") as data_file:
             story_data = ujson.load(data_file)
         approach = story_data["approach"]
         approach_idx = int(approach == GenerationApproach.PROPOSED)
 
         path_to_chunks = path_to_story / "chunks"
-        for chunk_id in tqdm(os.listdir(path_to_chunks)):
-            path_to_chunk = path_to_chunks / chunk_id
+        for path_to_chunk in path_to_chunks.iterdir():
             narrative_texts[approach_idx] += process_story_narratives(path_to_chunk / "data.json") + " "
     
     for approach in GenerationApproach:
+        logger.info(f"Generating word cloud for {approach.value} approach")
         approach_idx = int(approach == GenerationApproach.PROPOSED)
         wc = WordCloud(
-            width=1600, height=1000,
+            width=1200, height=750,
             background_color="white",
             collocations=False,
+            min_word_length=2,
             random_state=42,
         )
         wc.generate(narrative_texts[approach_idx].strip())
@@ -43,5 +46,11 @@ def process_story_narratives(path_to_json: Path) -> str:
     with open(path_to_json, "r") as file:
         content = ujson.load(file)
     for story in content["story"]:
-        narrative_text += clean(story["text"])
+        narrative_text += tokenize(story["text"]) + " "
     return narrative_text
+
+
+def tokenize(string: str) -> str:
+    tokenizer = ToktokTokenizer()
+    string = tokenizer.tokenize(string, return_str=True)
+    return string.lower()
