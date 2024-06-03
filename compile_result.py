@@ -1,8 +1,8 @@
 import typer
 from dotenv import load_dotenv
 
-from src.compile_result.step1 import core_objective_evaluation
-from src.compile_result.step2 import core_word_cloud_aggregation
+from src.compile_result.evaluation import core_objective_evaluation
+from src.compile_result.word_cloud import core_word_cloud_aggregation
 
 app = typer.Typer(pretty_exceptions_enable=False)
 
