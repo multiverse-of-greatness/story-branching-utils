@@ -4,6 +4,7 @@
 /data
 /neo4j
 /results
+/logs
 
 ### macOS ###
 # General

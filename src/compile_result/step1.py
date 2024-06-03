@@ -8,11 +8,18 @@ from tqdm import tqdm
 from typing_extensions import Any
 
 from src.config import CRITERION, RESULT_PATH
+from src.models.enums.generation_approach import GenerationApproach
 
 EVAL_ERROR = -1.0
 
 
 def core_objective_evaluation():
+    Path("logs").mkdir(exist_ok=True)
+    logger.add("logs/step-1.log")
+
+    best_score_per_approach = [0.0, 0.0]
+    best_story_id_per_approach = ["", ""]
+
     path_to_stories = RESULT_PATH / "eval-outputs"
     for path_to_story in path_to_stories.iterdir():
         path_to_chunks = path_to_story / "objective-evaluation"
@@ -40,6 +47,21 @@ def core_objective_evaluation():
                 logger.info(f"{c}: {np.mean(scores[c]):.4f} ± {np.std(scores[c]):.4f}")
             else:
                 logger.warning(f"{c}: No data")
+
+        avg_score = np.mean([np.mean(scores[c]) for c in CRITERION if scores[c]])
+        logger.info(f"Average: {avg_score:.4f}")
+
+        if approach == GenerationApproach.BASELINE and avg_score > best_score_per_approach[0]:
+            best_story_id_per_approach[0] = path_to_story.name
+            best_score_per_approach[0] = avg_score
+        elif approach == GenerationApproach.PROPOSED and avg_score > best_score_per_approach[1]:
+            best_story_id_per_approach[1] = path_to_story.name
+            best_score_per_approach[1] = avg_score
+
+    logger.info(f"Best story id for baseline: {best_story_id_per_approach[0]}")
+    logger.info(f"Best story id for proposed: {best_story_id_per_approach[1]}")
+    logger.info(f"Best score for baseline: {best_score_per_approach[0]:.4f}")
+    logger.info(f"Best score for proposed: {best_score_per_approach[1]:.4f}")
 
 
 def evaluate_score_json(path_to_json: Path) -> float:
