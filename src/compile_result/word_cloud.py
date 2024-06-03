@@ -28,7 +28,13 @@ def core_word_cloud_aggregation():
     
     for approach in GenerationApproach:
         approach_idx = int(approach == GenerationApproach.PROPOSED)
-        wc = WordCloud(width=1600, height=1000).generate(narrative_texts[approach_idx].strip())
+        wc = WordCloud(
+            width=1600, height=1000,
+            background_color="white",
+            collocations=False,
+            random_state=42,
+        )
+        wc.generate(narrative_texts[approach_idx].strip())
         wc.to_file(OUTPUTS_PATH / f"wordcloud-{approach.value}.png")
 
 
