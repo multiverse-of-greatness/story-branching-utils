@@ -2,6 +2,7 @@ import typer
 from dotenv import load_dotenv
 
 from src.compile_result.step1 import core_objective_evaluation
+from src.compile_result.step2 import core_word_cloud_aggregation
 
 app = typer.Typer(pretty_exceptions_enable=False)
 
@@ -13,7 +14,7 @@ def run_step_1():
 
 @app.command()
 def run_step_2():
-    typer.echo(f"Step 2")
+    core_word_cloud_aggregation()
 
 
 if __name__ == "__main__":
