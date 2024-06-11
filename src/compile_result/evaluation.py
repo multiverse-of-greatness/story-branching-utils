@@ -49,6 +49,8 @@ def core_objective_evaluation():
         path_to_data = RESULT_PATH / "exported-data" / path_to_story.name / "data.json"
         with open(path_to_data, "r") as data_file:
             data = ujson.load(data_file)
+
+        title = data['title']
         approach = data["approach"]
 
         logger.info(f"-- Story: {path_to_story.name} -- Approach: {approach} --")
@@ -64,6 +66,7 @@ def core_objective_evaluation():
         summarized_scores = {c: np.mean(scores[c]) for c in CRITERION}
 
         results[approach].append({
+            "title": title,
             "story_id": path_to_story.name,
             "avg_score": avg_score,
             "raw_scores": summarized_scores,
@@ -88,13 +91,14 @@ def core_objective_evaluation():
 
     with open(path_to_results, "w") as results_file:
         results_file.write(
-            f"story_id,approach,avg_score,{','.join(['_'.join(c.lower().split(' ')) for c in CRITERION])}\n")
+            f"story_id,title,approach,avg_score,{','.join(['_'.join(c.lower().split(' ')) for c in CRITERION])}\n")
         for approach in ["baseline", "proposed"]:
             for result in results[approach]:
                 story_id = result["story_id"]
+                title = result["title"]
                 avg_score = result["avg_score"]
                 raw_scores = ",".join([str(result["raw_scores"][c]) for c in CRITERION])
-                results_file.write(f"{story_id},{approach},{avg_score},{raw_scores}\n")
+                results_file.write(f"{story_id},{title},{approach},{avg_score},{raw_scores}\n")
 
     logger.info(f"Results saved to {path_to_results}")
 

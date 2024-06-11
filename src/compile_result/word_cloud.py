@@ -67,7 +67,7 @@ def core_word_cloud_aggregation():
         sns.barplot(x=list(word_freq.keys()), y=list(word_freq.values()))
         plt.xticks(rotation=90)
         plt.title(f"Top 30 frequent words for {approach.value} approach")
-        plt.savefig(OUTPUTS_PATH / f"word_freq_barplot-{approach.value}.png")
+        plt.savefig(OUTPUTS_PATH / f"word_freq_barplot-{approach.value}.png", bbox_inches='tight')
 
         with open(OUTPUTS_PATH / f"all-text-{approach.value}.txt", "w") as file:
             file.write(text)
