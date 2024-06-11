@@ -64,6 +64,7 @@ def core_word_cloud_aggregation():
         word_freq = dict(sorted(word_freq.items(), key=lambda x: x[1], reverse=True)[:30])
         sns.set_theme(style="whitegrid")
         plt.figure(figsize=(20, 10))
+        sns.set(font_scale=1.5)
         sns.barplot(x=list(word_freq.keys()), y=list(word_freq.values()))
         plt.xticks(rotation=90)
         plt.title(f"Top 30 frequent words for {approach.value} approach")
