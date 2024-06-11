@@ -13,7 +13,7 @@ def summarize_obj_eval():
 
 
 @app.command()
-def run_step_2():
+def generate_word_cloud():
     core_word_cloud_aggregation()
 
 

@@ -1,6 +1,10 @@
 import os
+from collections import Counter
 from pathlib import Path
 
+import matplotlib.pyplot as plt
+import nltk
+import seaborn as sns
 import ujson
 from loguru import logger
 from nltk.tokenize.toktok import ToktokTokenizer
@@ -12,6 +16,9 @@ from src.models.enums.generation_approach import GenerationApproach
 
 
 def core_word_cloud_aggregation():
+    nltk.download('wordnet')
+    nltk.download('stopwords')
+
     Path("outputs").mkdir(exist_ok=True)
 
     narrative_texts = ["", ""]
@@ -26,7 +33,7 @@ def core_word_cloud_aggregation():
         path_to_chunks = path_to_story / "chunks"
         for path_to_chunk in path_to_chunks.iterdir():
             narrative_texts[approach_idx] += process_story_narratives(path_to_chunk / "data.json") + " "
-    
+
     for approach in GenerationApproach:
         logger.info(f"Generating word cloud for {approach.value} approach")
         approach_idx = int(approach == GenerationApproach.PROPOSED)
@@ -36,9 +43,34 @@ def core_word_cloud_aggregation():
             collocations=False,
             min_word_length=2,
             random_state=42,
+
         )
-        wc.generate(narrative_texts[approach_idx].strip())
+
+        text = narrative_texts[approach_idx].strip().split(' , ')
+        text = [item.strip() for sublist in text for item in sublist.split()]
+
+        lemmatizer = nltk.WordNetLemmatizer()
+        text = [lemmatizer.lemmatize(word) for word in text]
+
+        stop_words = set(nltk.corpus.stopwords.words("english"))
+        text = [word for word in text if word not in stop_words and word.isalnum()]
+
+        text = " ".join(text)
+
+        wc.generate(text)
         wc.to_file(OUTPUTS_PATH / f"wordcloud-{approach.value}.png")
+
+        word_freq = Counter(text.split())
+        word_freq = dict(sorted(word_freq.items(), key=lambda x: x[1], reverse=True)[:30])
+        sns.set_theme(style="whitegrid")
+        plt.figure(figsize=(20, 10))
+        sns.barplot(x=list(word_freq.keys()), y=list(word_freq.values()))
+        plt.xticks(rotation=90)
+        plt.title(f"Top 30 frequent words for {approach.value} approach")
+        plt.savefig(OUTPUTS_PATH / f"word_freq_barplot-{approach.value}.png")
+
+        with open(OUTPUTS_PATH / f"all-text-{approach.value}.txt", "w") as file:
+            file.write(text)
 
 
 def process_story_narratives(path_to_json: Path) -> str:
