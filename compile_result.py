@@ -8,7 +8,7 @@ app = typer.Typer(pretty_exceptions_enable=False)
 
 
 @app.command()
-def run_step_1():
+def summarize_obj_eval():
     core_objective_evaluation()
 
 

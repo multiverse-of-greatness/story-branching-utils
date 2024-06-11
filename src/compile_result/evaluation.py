@@ -7,7 +7,7 @@ from loguru import logger
 from tqdm import tqdm
 from typing_extensions import Any
 
-from src.config import CRITERION, RESULT_PATH
+from src.config import CRITERION, RESULT_PATH, OUTPUTS_PATH
 from src.models.enums.generation_approach import GenerationApproach
 
 EVAL_ERROR = -1.0
@@ -20,8 +20,18 @@ def core_objective_evaluation():
     best_score_per_approach = [0.0, 0.0]
     best_story_id_per_approach = ["", ""]
 
+    SKIPPED_STORY_IDS = ["714eeff3-03ab-11ef-bd4b-182649966cd4", "c7783c18-f70b-11ee-ac52-182649966cd4"]
+
     path_to_stories = RESULT_PATH / "eval-outputs"
-    for path_to_story in path_to_stories.iterdir():
+    stories = [p for p in path_to_stories.iterdir() if p.is_dir() and p.name not in SKIPPED_STORY_IDS]
+
+    results = {
+        "baseline": [],
+        "proposed": []
+    }
+
+    for path_to_story in stories:
+        logger.info(f"Processing {path_to_story.name}")
         path_to_chunks = path_to_story / "objective-evaluation"
         scores = {c: [] for c in CRITERION}
 
@@ -51,6 +61,14 @@ def core_objective_evaluation():
         avg_score = np.mean([np.mean(scores[c]) for c in CRITERION if scores[c]])
         logger.info(f"Average: {avg_score:.4f}")
 
+        summarized_scores = {c: np.mean(scores[c]) for c in CRITERION}
+
+        results[approach].append({
+            "story_id": path_to_story.name,
+            "avg_score": avg_score,
+            "raw_scores": summarized_scores,
+        })
+
         if approach == GenerationApproach.BASELINE and avg_score > best_score_per_approach[0]:
             best_story_id_per_approach[0] = path_to_story.name
             best_score_per_approach[0] = avg_score
@@ -63,6 +81,23 @@ def core_objective_evaluation():
     logger.info(f"Best score for baseline: {best_score_per_approach[0]:.4f}")
     logger.info(f"Best score for proposed: {best_score_per_approach[1]:.4f}")
 
+    logger.info(f"Average scores for baseline: {np.mean([r['avg_score'] for r in results['baseline']]):.4f}")
+    logger.info(f"Average scores for proposed: {np.mean([r['avg_score'] for r in results['proposed']]):.4f}")
+
+    path_to_results = OUTPUTS_PATH / "objective-evaluation-results.csv"
+
+    with open(path_to_results, "w") as results_file:
+        results_file.write(
+            f"story_id,approach,avg_score,{','.join(['_'.join(c.lower().split(' ')) for c in CRITERION])}\n")
+        for approach in ["baseline", "proposed"]:
+            for result in results[approach]:
+                story_id = result["story_id"]
+                avg_score = result["avg_score"]
+                raw_scores = ",".join([str(result["raw_scores"][c]) for c in CRITERION])
+                results_file.write(f"{story_id},{approach},{avg_score},{raw_scores}\n")
+
+    logger.info(f"Results saved to {path_to_results}")
+
 
 def evaluate_score_json(path_to_json: Path) -> float:
     with open(path_to_json, "r") as json_file:
@@ -73,7 +108,7 @@ def evaluate_score_json(path_to_json: Path) -> float:
     if criteria in parsed_output:
         data: list[dict] = parsed_output[criteria]
         return sum([d["score"] for d in data if validate_score(d["score"])]) / len(data)
-    
+
     return EVAL_ERROR
 
 
