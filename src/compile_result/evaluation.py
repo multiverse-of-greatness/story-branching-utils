@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 import ujson
 from loguru import logger
 from tqdm import tqdm
@@ -51,6 +52,7 @@ def core_objective_evaluation():
             data = ujson.load(data_file)
 
         title = data['title']
+        synopsis = data['synopsis']
         approach = data["approach"]
 
         logger.info(f"-- Story: {path_to_story.name} -- Approach: {approach} --")
@@ -67,6 +69,7 @@ def core_objective_evaluation():
 
         results[approach].append({
             "title": title,
+            "synopsis": synopsis,
             "story_id": path_to_story.name,
             "avg_score": avg_score,
             "raw_scores": summarized_scores,
@@ -87,18 +90,24 @@ def core_objective_evaluation():
     logger.info(f"Average scores for baseline: {np.mean([r['avg_score'] for r in results['baseline']]):.4f}")
     logger.info(f"Average scores for proposed: {np.mean([r['avg_score'] for r in results['proposed']]):.4f}")
 
-    path_to_results = OUTPUTS_PATH / "objective-evaluation-results.csv"
+    data = []
 
-    with open(path_to_results, "w") as results_file:
-        results_file.write(
-            f"story_id,title,approach,avg_score,{','.join(['_'.join(c.lower().split(' ')) for c in CRITERION])}\n")
-        for approach in ["baseline", "proposed"]:
-            for result in results[approach]:
-                story_id = result["story_id"]
-                title = result["title"]
-                avg_score = result["avg_score"]
-                raw_scores = ",".join([str(result["raw_scores"][c]) for c in CRITERION])
-                results_file.write(f"{story_id},{title},{approach},{avg_score},{raw_scores}\n")
+    for approach in ["baseline", "proposed"]:
+        for result in results[approach]:
+            row = {
+                "story_id": result["story_id"],
+                "title": result["title"],
+                "synopsis": result["synopsis"],
+                "approach": approach,
+                "avg_score": result["avg_score"],
+            }
+            row.update({f"{c.lower().replace(' ', '_')}": result["raw_scores"][c] for c in CRITERION})
+            data.append(row)
+
+    df = pd.DataFrame(data)
+
+    path_to_results = OUTPUTS_PATH / "objective-evaluation-results.csv"
+    df.to_csv(path_to_results, index=False)
 
     logger.info(f"Results saved to {path_to_results}")
 
