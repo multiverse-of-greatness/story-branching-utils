@@ -3,6 +3,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import scipy.stats as stats
 import ujson
 from loguru import logger
 from tqdm import tqdm
@@ -63,15 +64,20 @@ def core_objective_evaluation():
                 logger.warning(f"{c}: No data")
 
         avg_score = np.mean([np.mean(scores[c]) for c in CRITERION if scores[c]])
+        std_score = np.std([np.mean(scores[c]) for c in CRITERION if scores[c]])
         logger.info(f"Average: {avg_score:.4f}")
 
-        summarized_scores = {c: np.mean(scores[c]) for c in CRITERION}
+        summarized_scores = {c: {
+            "mean": np.mean(scores[c]),
+            "std": np.std(scores[c]),
+        } for c in CRITERION}
 
         results[approach].append({
             "title": title,
             "synopsis": synopsis,
             "story_id": path_to_story.name,
             "avg_score": avg_score,
+            "std_score": std_score,
             "raw_scores": summarized_scores,
         })
 
@@ -100,8 +106,10 @@ def core_objective_evaluation():
                 "synopsis": result["synopsis"],
                 "approach": approach,
                 "avg_score": result["avg_score"],
+                "std_score": result["std_score"],
             }
-            row.update({f"{c.lower().replace(' ', '_')}": result["raw_scores"][c] for c in CRITERION})
+            row.update({f"avg_{c.lower().replace(' ', '_')}": result["raw_scores"][c]["mean"] for c in CRITERION})
+            row.update({f"std_{c.lower().replace(' ', '_')}": result["raw_scores"][c]["std"] for c in CRITERION})
             data.append(row)
 
     df = pd.DataFrame(data)
