@@ -23,7 +23,8 @@ def core_word_cloud_aggregation():
 
     narrative_texts = ["", ""]
     path_to_stories = RESULT_PATH / "exported-data"
-    for story_id in tqdm(os.listdir(path_to_stories)):
+    stories = [story for story in os.listdir(path_to_stories) if os.path.isdir(path_to_stories / story)]
+    for story_id in tqdm(stories):
         path_to_story = path_to_stories / story_id
         with open(path_to_story / "data.json", "r") as data_file:
             story_data = ujson.load(data_file)
@@ -54,6 +55,8 @@ def core_word_cloud_aggregation():
 
         stop_words = set(nltk.corpus.stopwords.words("english"))
         text = [word for word in text if word not in stop_words and word.isalnum()]
+
+        text = [word for word in text if len(word) > 1]
 
         text = " ".join(text)
 

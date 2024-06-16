@@ -3,10 +3,9 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import scipy.stats as stats
 import ujson
 from loguru import logger
-from tqdm import tqdm
+from rich.progress import track
 from typing_extensions import Any
 
 from src.config import CRITERION, RESULT_PATH, OUTPUTS_PATH
@@ -32,12 +31,12 @@ def core_objective_evaluation():
         "proposed": []
     }
 
-    for path_to_story in stories:
+    for path_to_story in track(stories):
         logger.info(f"Processing {path_to_story.name}")
         path_to_chunks = path_to_story / "objective-evaluation"
         scores = {c: [] for c in CRITERION}
 
-        for chunk_id in tqdm(os.listdir(path_to_chunks)):
+        for chunk_id in track(os.listdir(path_to_chunks)):
             path_to_chunk = path_to_chunks / chunk_id
             for path_to_json in path_to_chunk.glob("*.json"):
                 criteria = path_to_json.name.split(".")[0]
