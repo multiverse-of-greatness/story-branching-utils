@@ -1,0 +1,3 @@
+model,positive,negative,total
+baseline,35022,36332,476827
+proposed,79756,59258,902095
